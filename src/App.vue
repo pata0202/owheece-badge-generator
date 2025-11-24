@@ -11,6 +11,8 @@ const badgeRef = ref(null)
 
 const showPhotoCropper = ref(false)
 const tempPhotoSrc = ref('')
+const showImageDialog = ref(false)
+const dialogImageSrc = ref('')
 
 const handleImageUpload = (event) => {
   const file = event.target.files[0]
@@ -50,8 +52,19 @@ const handleCropCancel = () => {
 
 const downloadBadge = () => {
   if (badgeRef.value) {
-    badgeRef.value.downloadBadge()
+    badgeRef.value.downloadBadge((imageDataUrl) => {
+      // 收到圖片資料後顯示在 dialog 中
+      dialogImageSrc.value = imageDataUrl
+      showImageDialog.value = true
+    })
   }
+}
+
+const closeImageDialog = () => {
+  showImageDialog.value = false
+  setTimeout(() => {
+    dialogImageSrc.value = ''
+  }, 300)
 }
 </script>
 
@@ -125,6 +138,22 @@ const downloadBadge = () => {
       @confirm="handleCropConfirm"
       @cancel="handleCropCancel"
     />
+
+    <!-- 圖片顯示 Dialog -->
+    <div v-if="showImageDialog" class="image-dialog" @click="closeImageDialog">
+      <div class="dialog-content" @click.stop>
+        <div class="dialog-header">
+          <h3>長按圖片儲存</h3>
+          <button @click="closeImageDialog" class="close-btn">✕</button>
+        </div>
+        <div class="dialog-body">
+          <img :src="dialogImageSrc" alt="員工證" class="dialog-image" />
+        </div>
+        <div class="dialog-footer">
+          <p>📱 長按圖片選擇「儲存圖片」或「加入照片」</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -223,5 +252,128 @@ h1 {
 
 .download-btn:active {
   transform: scale(0.98);
+}
+
+/* Dialog 樣式 */
+.image-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialog-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dialog-header h3 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 20px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.dialog-body {
+  padding: 20px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dialog-footer {
+  padding: 15px 20px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
+
+.dialog-footer p {
+  margin: 0;
+  text-align: center;
+  color: #2563eb;
+  font-weight: 500;
+  font-size: 14px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@media (min-width: 768px) {
+  .dialog-content {
+    max-width: 500px;
+  }
 }
 </style>
