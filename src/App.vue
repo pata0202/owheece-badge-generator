@@ -9,6 +9,7 @@ const employeeId = ref('')
 const backgroundImage = ref('')
 const photoImage = ref('')
 const badgeRef = ref(null)
+const photoInputRef = ref(null)
 
 const showPhotoCropper = ref(false)
 const tempPhotoSrc = ref('')
@@ -25,19 +26,25 @@ const handlePhotoUpload = (event) => {
     }
     reader.readAsDataURL(file)
   }
-  // 清空 input，允許重複選擇同一張圖片
-  event.target.value = ''
 }
 
 const handleCropConfirm = (croppedImage) => {
   photoImage.value = croppedImage
   showPhotoCropper.value = false
   tempPhotoSrc.value = ''
+  // 清空 input，允許重複選擇同一張圖片
+  // if (photoInputRef.value) {
+  //   photoInputRef.value.value = ''
+  // }
 }
 
 const handleCropCancel = () => {
   showPhotoCropper.value = false
   tempPhotoSrc.value = ''
+  // 清空 input，允許重複選擇同一張圖片
+  if (photoInputRef.value) {
+    photoInputRef.value.value = ''
+  }
 }
 
 const downloadBadge = () => {
@@ -78,7 +85,7 @@ const closeImageDialog = () => {
 
         <div class="form-group">
           <label for="photo">照片：</label>
-          <input id="photo" type="file" accept="image/*" @change="handlePhotoUpload"
+          <input id="photo" ref="photoInputRef" type="file" accept="image/*" @change="handlePhotoUpload"
             class="file:mr-4 file:rounded-full file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-violet-600 dark:file:text-violet-100 dark:hover:file:bg-violet-500" />
           <small class="hint">上傳照片</small>
         </div>
