@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import EmployeeBadge from './components/EmployeeBadge.vue'
 import ImageCropper from './components/ImageCropper.vue'
+import title from './assets/title.svg'
 
 const employeeName = ref('')
 const employeeId = ref('')
@@ -13,17 +14,6 @@ const showPhotoCropper = ref(false)
 const tempPhotoSrc = ref('')
 const showImageDialog = ref(false)
 const dialogImageSrc = ref('')
-
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      backgroundImage.value = e.target.result
-    }
-    reader.readAsDataURL(file)
-  }
-}
 
 const handlePhotoUpload = (event) => {
   const file = event.target.files[0]
@@ -69,75 +59,40 @@ const closeImageDialog = () => {
 </script>
 
 <template>
-  <div class="badge-generator">
-    <h1>員工證產生器</h1>
-    
-    <div class="content-wrapper">
-      <div class="form-container">
+  <div class="px-12 py-10 bg-gray-100 min-h-screen" id="app">
+    <div class="flex justify-center mb-10">
+      <img :src="title" alt="OWHEECE Badge Generator" class="h-20" />
+    </div>
+    <div class="flex gap-10 flex-wrap justify-center">
+      <!-- 左邊 表單 -->
+      <div class="bg-white p-12 rounded-xl shadow-xl flex-none h-full">
         <div class="form-group">
           <label for="name">姓名：</label>
-          <input 
-            id="name"
-            v-model="employeeName" 
-            type="text" 
-            placeholder="請輸入姓名"
-          />
+          <input id="name" v-model="employeeName" type="text" placeholder="請輸入姓名" />
         </div>
-        
+
         <div class="form-group">
           <label for="id">部門：</label>
-          <input 
-            id="id"
-            v-model="employeeId" 
-            type="text" 
-            placeholder="請輸入部門"
-          />
+          <input id="id" v-model="employeeId" type="text" placeholder="請輸入部門" />
         </div>
 
         <div class="form-group">
-          <label for="photo">個人照片：</label>
-          <input 
-            id="photo"
-            type="file" 
-            accept="image/*"
-            @change="handlePhotoUpload"
-            class="file-input"
-          />
-          <small class="hint">上傳個人照片</small>
+          <label for="photo">照片：</label>
+          <input id="photo" type="file" accept="image/*" @change="handlePhotoUpload"
+            class="file:mr-4 file:rounded-full file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-violet-600 dark:file:text-violet-100 dark:hover:file:bg-violet-500" />
+          <small class="hint">上傳照片</small>
         </div>
-
-        <!-- <div class="form-group">
-          <label for="background">背景圖片：</label>
-          <input 
-            id="background"
-            type="file" 
-            accept="image/*"
-            @change="handleImageUpload"
-            class="file-input"
-          />
-          <small class="hint">選擇性上傳背景圖片</small>
-        </div> -->
 
         <button @click="downloadBadge" class="download-btn">下載員工證</button>
       </div>
-
-      <EmployeeBadge 
-        ref="badgeRef"
-        :employee-name="employeeName" 
-        :employee-id="employeeId"
-        :background-image="backgroundImage"
-        :photo-image="photoImage"
-      />
+      <!-- 右邊 預覽窗 -->
+      <EmployeeBadge class="flex-1 h-[70vh] p-12 rounded-xl shadow-xl bg-white" ref="badgeRef"
+        :employee-name="employeeName" :employee-id="employeeId" :background-image="backgroundImage"
+        :photo-image="photoImage" />
     </div>
 
-    <ImageCropper
-      :visible="showPhotoCropper"
-      :image-src="tempPhotoSrc"
-      title="裁切個人照片"
-      :aspect-ratio="5/6"
-      @confirm="handleCropConfirm"
-      @cancel="handleCropCancel"
-    />
+    <ImageCropper :visible="showPhotoCropper" :image-src="tempPhotoSrc" title="裁切個人照片" :aspect-ratio="5 / 6"
+      @confirm="handleCropConfirm" @cancel="handleCropCancel" />
 
     <!-- 圖片顯示 Dialog -->
     <div v-if="showImageDialog" class="image-dialog" @click="closeImageDialog">
@@ -146,7 +101,8 @@ const closeImageDialog = () => {
           <h3>長按圖片儲存</h3>
           <button @click="closeImageDialog" class="close-btn">✕</button>
         </div>
-        <div class="dialog-body">
+        <!-- 高度50vh，要顯示滾動條 -->
+        <div class="p-12 max-h-[70vh] overflow-auto ">
           <img :src="dialogImageSrc" alt="員工證" class="dialog-image" />
         </div>
         <div class="dialog-footer">
@@ -160,18 +116,13 @@ const closeImageDialog = () => {
 <style>
 #app {
   min-height: 100vh;
+  /* background-color: #C5CFEA; */
 }
 
-.badge-generator {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-h1 {
-  text-align: center;
-  color: #1f2937;
-  margin-bottom: 30px;
+.badge-preview {
+  max-height: 80svh;
+  /* 維持長寬比 */
+  aspect-ratio: 638 / 1012;
 }
 
 .content-wrapper {
@@ -273,6 +224,7 @@ h1 {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -295,6 +247,7 @@ h1 {
     transform: translateY(50px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -349,6 +302,8 @@ h1 {
   height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  /* 圖片自動縮小放入容器 */
+  object-fit: contain;
 }
 
 .dialog-footer {
@@ -367,8 +322,15 @@ h1 {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @media (min-width: 768px) {
