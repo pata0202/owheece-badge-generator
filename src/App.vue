@@ -59,13 +59,13 @@ const closeImageDialog = () => {
 </script>
 
 <template>
-  <div class="px-12 py-10 bg-gray-100 min-h-screen" id="app">
+  <div class="md:px-12 px-5 py-10 bg-gray-100 min-h-screen" id="app">
     <div class="flex justify-center mb-10">
       <img :src="title" alt="OWHEECE Badge Generator" class="h-20" />
     </div>
     <div class="flex gap-10 flex-wrap justify-center">
       <!-- 左邊 表單 -->
-      <div class="bg-white p-12 rounded-xl shadow-xl flex-none h-full">
+      <div class="bg-white p-12 rounded-xl shadow-xl md:flex-none h-full">
         <div class="form-group">
           <label for="name">姓名：</label>
           <input id="name" v-model="employeeName" type="text" placeholder="請輸入姓名" />
@@ -86,7 +86,7 @@ const closeImageDialog = () => {
         <button @click="downloadBadge" class="download-btn">下載員工證</button>
       </div>
       <!-- 右邊 預覽窗 -->
-      <EmployeeBadge class="flex-1 h-[70vh] p-12 rounded-xl shadow-xl bg-white" ref="badgeRef"
+      <EmployeeBadge class="flex-1 h-[70vh] md:h-[75svh] p-12 rounded-xl shadow-xl bg-white" ref="badgeRef"
         :employee-name="employeeName" :employee-id="employeeId" :background-image="backgroundImage"
         :photo-image="photoImage" />
     </div>
