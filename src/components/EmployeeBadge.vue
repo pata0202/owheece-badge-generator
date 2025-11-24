@@ -1,11 +1,14 @@
 <template>
   <div class="canvas-container">
-    <canvas ref="badgeCanvas" width="400" height="600"></canvas>
+    <!-- 54mm x 85.5mm at 300 DPI = 638px x 1012px -->
+    <canvas ref="badgeCanvas" width="638" height="1012"></canvas>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { addMetadata, addMetadataFromBase64DataURI } from 'meta-png'
+import MainSvg from '../assets/Main.svg'
 
 const props = defineProps({
   employeeName: {
@@ -28,14 +31,30 @@ const props = defineProps({
 
 const badgeCanvas = ref(null)
 let ctx = null
+let svgBgImage = null // 固定的 SVG 背景
 let bgImage = null
 let photoImg = null
 
 onMounted(() => {
   ctx = badgeCanvas.value.getContext('2d')
+  loadSvgBackground()
   loadBackgroundImage()
   loadPhotoImage()
 })
+
+// 載入固定的 SVG 背景
+const loadSvgBackground = () => {
+  svgBgImage = new Image()
+  svgBgImage.onload = () => {
+    drawBadge()
+  }
+  svgBgImage.onerror = () => {
+    console.error('SVG 背景載入失敗')
+    svgBgImage = null
+    drawBadge()
+  }
+  svgBgImage.src = MainSvg
+}
 
 watch(() => [props.employeeName, props.employeeId], () => {
   drawBadge()
@@ -90,45 +109,32 @@ const loadPhotoImage = () => {
 const drawBadge = () => {
   if (!ctx) return
 
-  // 清空畫布
-  ctx.clearRect(0, 0, 400, 600)
+  const width = 638
+  const height = 1012
 
-  // 背景圖片或純色背景
-  if (bgImage && bgImage.complete) {
-    // 繪製背景圖片，自動縮放以填滿整個 canvas
-    ctx.drawImage(bgImage, 0, 0, 400, 600)
+  // 清空畫布
+  ctx.clearRect(0, 0, width, height)
+
+  // 1. 先繪製固定的 SVG 背景（最底層）
+  if (svgBgImage && svgBgImage.complete) {
+    ctx.drawImage(svgBgImage, 0, 0, width, height)
   } else {
-    // 預設白色背景
+    // 如果 SVG 未載入，顯示白色背景
     ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, 400, 600)
+    ctx.fillRect(0, 0, width, height)
   }
 
-  // 頂部藍色區塊（可以選擇是否保留，或調整透明度）
-  ctx.fillStyle = 'rgba(37, 99, 235, 0.9)'
-  ctx.fillRect(0, 0, 400, 150)
-
-  // 公司名稱
-  ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 28px Arial'
-  ctx.textAlign = 'center'
-  ctx.fillText('公司名稱', 200, 60)
-
-  ctx.font = '18px Arial'
-  ctx.fillText('EMPLOYEE BADGE', 200, 90)
-
-  // 邊框
-  ctx.strokeStyle = '#2563eb'
-  ctx.lineWidth = 3
-  ctx.strokeRect(10, 10, 380, 580)
-
-  // 照片區域
+  // 2. 如果有額外的背景圖片，可以疊加在 SVG 上（可選）
+  // 這裡可以保留或移除，視需求而定
+  
+  // 3. 照片區域（根據 SVG 的預留位置）
+  const photoX = 177
+  const photoY = 217
+  const photoWidth = 380
+  const photoHeight = 456
+  
   if (photoImg && photoImg.complete) {
     // 計算照片的縮放比例以填滿區域（保持比例並裁切）
-    const photoWidth = 200
-    const photoHeight = 240
-    const photoX = 100
-    const photoY = 180
-    
     const scale = Math.max(photoWidth / photoImg.width, photoHeight / photoImg.height)
     const scaledWidth = photoImg.width * scale
     const scaledHeight = photoImg.height * scale
@@ -142,61 +148,71 @@ const drawBadge = () => {
     ctx.clip()
     ctx.drawImage(photoImg, photoX - offsetX, photoY - offsetY, scaledWidth, scaledHeight)
     ctx.restore()
-  } else {
-    // 照片佔位符
-    ctx.fillStyle = '#e5e7eb'
-    ctx.fillRect(100, 180, 200, 240)
-    
-    ctx.fillStyle = '#9ca3af'
-    ctx.font = '16px Arial'
-    ctx.fillText('照片區域', 200, 300)
   }
 
-  // 姓名標籤
-  ctx.fillStyle = '#374151'
-  ctx.font = 'bold 20px Arial'
+  // 4. 姓名區域（酒紅色區塊內，白色文字）
+  const nameBlockY = 727
+  const nameBlockHeight = 87
+  const nameCenterY = nameBlockY + nameBlockHeight / 2 + 3 // 垂直置中並微調
+  
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 48px Arial'
   ctx.textAlign = 'center'
-  ctx.fillText('姓名', 200, 460)
+  ctx.textBaseline = 'middle'
+  ctx.fillText(props.employeeName || '未輸入', 367, nameCenterY)
 
-  // 姓名內容
-  ctx.fillStyle = '#1f2937'
-  ctx.font = 'bold 26px Arial'
-  ctx.fillText(props.employeeName || '未輸入', 200, 495)
-
-  // 員工編號標籤
-  ctx.fillStyle = '#374151'
-  ctx.font = 'bold 20px Arial'
-  ctx.fillText('員工編號', 200, 535)
-
-  // 員工編號內容
-  ctx.fillStyle = '#1f2937'
-  ctx.font = 'bold 24px Arial'
-  ctx.fillText(props.employeeId || '未輸入', 200, 570)
+  // 5. 員工編號區域（酒紅色區塊內，白色文字）
+  const idBlockY = 868
+  const idBlockHeight = 87
+  const idCenterY = idBlockY + idBlockHeight / 2 + 3 // 垂直置中並微調
+  
+  ctx.fillStyle = '#ffffff'
+  ctx.font = 'bold 48px Arial'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(props.employeeId || '未輸入', 367, idCenterY)
 }
 
 defineExpose({
-  downloadBadge: (callback) => {
+  downloadBadge: async (callback) => {
     if (!badgeCanvas.value) return
     
     try {
-      // 將 canvas 轉換為 data URL
+      // 將 canvas 轉換為 Data URL
       const dataUrl = badgeCanvas.value.toDataURL('image/png')
+      
+      // 準備元數據
+      const metadata = {
+        'Title': '員工證',
+        'Author': '公司名稱',
+        'EmployeeName': props.employeeName || '未輸入',
+        'EmployeeId': props.employeeId || '未輸入',
+        'Software': 'Employee Badge Generator',
+        'CreationTime': new Date().toISOString(),
+        'DPI': '300'
+      }
+      
+      // 使用 meta-png 的 addMetadataFromBase64DataURI 逐一加入元數據
+      let resultDataUrl = dataUrl
+      for (const [key, value] of Object.entries(metadata)) {
+        resultDataUrl = addMetadataFromBase64DataURI(resultDataUrl, key, value)
+      }
       
       // 統一使用 callback 傳遞圖片資料給 dialog
       if (callback) {
-        callback(dataUrl)
+        callback(resultDataUrl)
       } else {
         // 如果沒有 callback（向下相容），使用標準下載方式
         const link = document.createElement('a')
         link.download = `員工證_${props.employeeName || 'unnamed'}_${props.employeeId || 'noid'}.png`
-        link.href = dataUrl
+        link.href = resultDataUrl
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
       }
     } catch (error) {
       console.error('下載失敗:', error)
-      alert('下載失敗，請稍後再試')
+      alert('下載失敗,請稍後再試')
     }
   }
 })

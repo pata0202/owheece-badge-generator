@@ -150,7 +150,7 @@ const closeImageDialog = () => {
           <img :src="dialogImageSrc" alt="員工證" class="dialog-image" />
         </div>
         <div class="dialog-footer">
-          <p>📱 長按圖片選擇「儲存圖片」或「加入照片」</p>
+          <p>長按圖片選擇「儲存到照片」或「加入照片」等</p>
         </div>
       </div>
     </div>
