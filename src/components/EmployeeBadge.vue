@@ -8,7 +8,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { addMetadata, addMetadataFromBase64DataURI } from 'meta-png'
-import MainSvg from '../assets/Main.svg'
+import MainSvg from '../assets/Main2.svg'
 
 const props = defineProps({
   employeeName: {
@@ -153,10 +153,10 @@ const drawBadge = () => {
   // 4. 姓名區域（酒紅色區塊內，白色文字）
   const nameBlockY = 727
   const nameBlockHeight = 87
-  const nameCenterY = nameBlockY + nameBlockHeight / 2 + 3 // 垂直置中並微調
+  const nameCenterY = nameBlockY + nameBlockHeight / 2 + 0 // 垂直置中並微調
   
-  ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 48px Arial'
+  ctx.fillStyle = '#000000'
+  ctx.font = 'bold 24px Noto Sans TC'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(props.employeeName || '未輸入', 367, nameCenterY)
@@ -164,10 +164,10 @@ const drawBadge = () => {
   // 5. 員工編號區域（酒紅色區塊內，白色文字）
   const idBlockY = 868
   const idBlockHeight = 87
-  const idCenterY = idBlockY + idBlockHeight / 2 + 3 // 垂直置中並微調
+  const idCenterY = idBlockY + idBlockHeight / 2 + 0 // 垂直置中並微調
   
-  ctx.fillStyle = '#ffffff'
-  ctx.font = 'bold 48px Arial'
+  ctx.fillStyle = '#000000'
+  ctx.font = 'bold 24px Noto Sans TC'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(props.employeeId || '未輸入', 367, idCenterY)

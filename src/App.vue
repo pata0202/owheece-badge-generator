@@ -85,12 +85,12 @@ const closeImageDialog = () => {
         </div>
         
         <div class="form-group">
-          <label for="id">員工編號：</label>
+          <label for="id">部門：</label>
           <input 
             id="id"
             v-model="employeeId" 
             type="text" 
-            placeholder="請輸入員工編號"
+            placeholder="請輸入部門"
           />
         </div>
 
