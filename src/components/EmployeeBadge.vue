@@ -178,10 +178,90 @@ defineExpose({
   downloadBadge: () => {
     if (!badgeCanvas.value) return
     
-    const link = document.createElement('a')
-    link.download = `員工證_${props.employeeName || 'unnamed'}_${props.employeeId || 'noid'}.png`
-    link.href = badgeCanvas.value.toDataURL()
-    link.click()
+    try {
+      // 將 canvas 轉換為 blob
+      badgeCanvas.value.toBlob((blob) => {
+        if (!blob) {
+          console.error('無法生成圖片')
+          return
+        }
+
+        // 檢測是否為 iOS 裝置
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+        
+        if (isIOS) {
+          // iOS 特殊處理：開啟新視窗顯示圖片
+          const url = URL.createObjectURL(blob)
+          const img = new Image()
+          img.src = url
+          img.onload = () => {
+            // 創建一個新視窗顯示圖片，用戶可以長按保存
+            const w = window.open('', '_blank')
+            if (w) {
+              w.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta charset="UTF-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <title>長按圖片保存</title>
+                  <style>
+                    body { 
+                      margin: 0; 
+                      padding: 20px; 
+                      display: flex; 
+                      flex-direction: column;
+                      align-items: center; 
+                      justify-content: center; 
+                      min-height: 100vh;
+                      background: #f3f4f6;
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+                    }
+                    .instruction {
+                      background: #2563eb;
+                      color: white;
+                      padding: 15px 25px;
+                      border-radius: 10px;
+                      margin-bottom: 20px;
+                      text-align: center;
+                      font-size: 16px;
+                      font-weight: 500;
+                      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    }
+                    img { 
+                      max-width: 100%; 
+                      height: auto;
+                      border-radius: 8px;
+                      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                    }
+                  </style>
+                </head>
+                <body>
+                  <div class="instruction">⬇️ 長按圖片選擇「儲存圖片」</div>
+                  <img src="${url}" alt="員工證" />
+                </body>
+                </html>
+              `)
+              w.document.close()
+            }
+            URL.revokeObjectURL(url)
+          }
+        } else {
+          // 一般瀏覽器使用標準下載方式
+          const url = URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.download = `員工證_${props.employeeName || 'unnamed'}_${props.employeeId || 'noid'}.png`
+          link.href = url
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+          URL.revokeObjectURL(url)
+        }
+      }, 'image/png')
+    } catch (error) {
+      console.error('下載失敗:', error)
+      alert('下載失敗，請稍後再試')
+    }
   }
 })
 </script>
